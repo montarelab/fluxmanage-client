@@ -1,25 +1,28 @@
-import { promises as fs } from "fs";
-import path from "path";
-import Image from "next/image";
-import { z } from "zod";
+"use client";
 
-import { taskSchema } from "./data/schema";
+import Image from "next/image";
+import { Task } from "@/types/task";
 import { TaskContent } from "./components/TaskContent";
 import { TaskService } from "../../lib/http-client";
+import tasksData from "./data/tasks.json";
 
-// Simulate a database read for tasks.
-async function getTasks() {
-  const data = await fs.readFile(
-    path.join(process.cwd(), "app/tasks/data/tasks.json")
-  );
-  const tasks = JSON.parse(data.toString());
-  return z.array(taskSchema).parse(tasks);
+const dummyTasks: ExtendedTask[] = tasksData.map((task) => ({
+  ...task,
+  label: `Label ${task.id}`,
+  status: task.status === "pending" || task.status === "completed" ? task.status : "pending",
+  // Ensure priority is one of the valid values
+  priority: ["low", "medium", "high"].includes(task.priority) ? 
+    task.priority as "low" | "medium" | "high" : 
+    "medium"
+}));
+
+interface ExtendedTask extends Task {
+  label: string;
 }
 
 export default async function TaskPage() {
-  const tasks = await getTasks();
+  const tasks = dummyTasks;  // Using dummyTasks directly since getTasks isn't defined
 
-  // Example usage of TaskService
   async function handleCreateTask() {
     const newTask = await TaskService.createTask({ title: "New Task" });
     console.log("Task created:", newTask);

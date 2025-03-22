@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Row } from "@tanstack/react-table";
-import { CheckIcon, MoreHorizontal, XIcon } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {

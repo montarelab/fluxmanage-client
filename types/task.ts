@@ -5,6 +5,7 @@ export interface Task {
   status: "pending" | "completed";
   priority: "low" | "medium" | "high";
   assignedTo?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
+  label?: string;
 }
