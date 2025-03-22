@@ -3,9 +3,14 @@
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 import { UserNav } from "./user-nav";
+import { Task as BaseTask } from "@/types/task";
+
+interface Task extends BaseTask {
+  label: string;
+}
 
 interface TaskContentProps {
-  tasks: any[];
+  tasks: Task[];
 }
 
 export function TaskContent({ tasks }: TaskContentProps) {

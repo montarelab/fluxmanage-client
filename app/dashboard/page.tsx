@@ -1,5 +1,3 @@
-import { promises as fs } from "fs";
-import path from "path";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   SidebarInset,
@@ -7,18 +5,21 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
+import { Task } from "@/types/task";
+import { TaskService } from "@/lib/http-client";
 
 import { TaskContent } from "../tasks/components/TaskContent";
-import { taskSchema } from "../tasks/data/schema";
-import { z } from "zod";
 
-// Optionally, move getTasks to a shared file.
-async function getTasks() {
-  const data = await fs.readFile(
-    path.join(process.cwd(), "app/tasks/data/tasks.json")
-  );
-  const tasks = JSON.parse(data.toString());
-  return z.array(taskSchema).parse(tasks);
+interface ExtendedTask extends Task {
+  label: string;
+}
+
+async function getTasks(): Promise<ExtendedTask[]> {
+  const tasks = await TaskService.getAllTasks();
+  return tasks.map((task) => ({
+    ...task,
+    label: task.label || "Default Label",
+  }));
 }
 
 export default async function DashboardPage() {
