@@ -15,10 +15,14 @@ interface ExtendedTask extends Task {
 }
 
 async function getTasks(): Promise<ExtendedTask[]> {
-  const tasks = await TaskService.getAllTasks();
-  return tasks.map((task) => ({
+  // Import tasks from JSON file
+  const tasks = await import('../tasks/data/tasks.json').then(module => module.default);
+  return tasks.map(task => ({
     ...task,
-    label: task.label || "Default Label",
+    // Map various status values to either "pending" or "completed"
+    status: ["done", "canceled"].includes(task.status) ? "completed" : "pending",
+    // Ensure priority is one of the allowed values
+    priority: task.priority as "medium" | "high" | "low"
   }));
 }
 
