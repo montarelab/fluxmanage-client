@@ -27,6 +27,9 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
+import { DataTableRowActions } from "./data-table-row-actions";
+import { Sheet } from "@/components/ui/sheet";
+import { taskSchema } from "../data/schema";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -44,6 +47,8 @@ export function DataTable<TData, TValue>({
     []
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [isSheetOpen, setIsSheetOpen] = React.useState(false);
+  const [selectedRow, setSelectedRow] = React.useState<any>(null);
 
   const table = useReactTable({
     data,
@@ -66,6 +71,11 @@ export function DataTable<TData, TValue>({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
+
+  const handleRowClick = (row: any) => {
+    setSelectedRow(row.original);
+    setIsSheetOpen(true);
+  };
 
   return (
     <div className="space-y-4">
@@ -96,6 +106,8 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  onClick={() => handleRowClick(row)}
+                  className="cursor-pointer hover:bg-muted/50"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -121,6 +133,14 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <DataTablePagination table={table} />
+      
+      {selectedRow && (
+        <DataTableRowActions 
+          row={{ original: selectedRow } as any} 
+          isSheetOpenExternal={isSheetOpen}
+          setIsSheetOpenExternal={setIsSheetOpen}
+        />
+      )}
     </div>
   );
 }
