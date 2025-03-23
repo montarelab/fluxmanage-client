@@ -2,13 +2,23 @@
 
 import { useState } from "react"
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@radix-ui/react-collapsible";
+import {
   CircleIcon,
   MoreHorizontal,
   Plus,
   Share,
   Trash2,
+  Edit,
+  LayoutList,
   Pencil,
+  ChevronRight,
 } from "lucide-react"
+
+import { Project } from "@/types/project"
 
 import {
   AlertDialog,
@@ -43,6 +53,9 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useProjects } from "@/hooks/useProjects"
@@ -53,33 +66,26 @@ export function NavProjects() {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-  const [selectedProject, setSelectedProject] = useState<{ id: string; name: string } | null>(null)
-  const [projectName, setProjectName] = useState("")
+  const [selectedProject, setSelectedProject] = useState<{ id: string; title: string } | null>(null)
+  const [projectTitle, setProjectTitle] = useState("")
   const { projects, loading, setProjects } = useProjects()
-
-  if (loading) {
-    return (
-      <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-        <div className="flex items-center justify-between px-4">
-          <SidebarGroupLabel>Projects</SidebarGroupLabel>
-          <Button variant="ghost" size="icon" className="h-6 w-6" disabled>
-            <Plus className="h-4 w-4" />
-            <span className="sr-only">Add Project</span>
-          </Button>
-        </div>
-        <SidebarMenu>
-          <div className="px-4 py-2 text-sm text-muted-foreground">Loading...</div>
-        </SidebarMenu>
-      </SidebarGroup>
-    )
-  }
 
   const handleCreateProject = async () => {
     try {
-      const newProject = await ProjectService.createProject({ title: projectName })
+      const newProject: Project =
+      {
+        id: "",
+        title: projectTitle,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        members: []
+      }
+      newProject.id = await ProjectService.createProject(newProject)
+      
       setProjects(prev => [...prev, newProject])
       setIsCreateOpen(false)
-      setProjectName("")
+      setProjectTitle("")
+      console.log("Project created successfully:", newProject)
     } catch (error) {
       console.error("Failed to create project:", error)
     }
@@ -88,11 +94,15 @@ export function NavProjects() {
   const handleEditProject = async () => {
     if (!selectedProject) return
     try {
-      const updatedProject = await ProjectService.updateProject(selectedProject.id, { title: projectName })
-      setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p))
+
+      await ProjectService.updateProject(selectedProject.id, { title: projectTitle })
+      const newProject = projects.find(p => p.id === selectedProject.id)
+      newProject.title = projectTitle
+      setProjects(prev => prev.map(p => p.id === selectedProject.id ? newProject : p))
       setIsEditOpen(false)
       setSelectedProject(null)
-      setProjectName("")
+      setProjectTitle("")
+      console.log("Project updated successfully:", selectedProject)
     } catch (error) {
       console.error("Failed to update project:", error)
     }
@@ -116,69 +126,90 @@ export function NavProjects() {
     window.history.pushState({}, '', url.toString());
   }
 
+  if (loading) {
+    return (
+      <SidebarGroup>
+        <SidebarGroupLabel>PROJECT MANAGEMENT</SidebarGroupLabel>
+        <SidebarMenu>
+          <div className="px-4 py-2 text-sm text-muted-foreground">Loading...</div>
+        </SidebarMenu>
+      </SidebarGroup>
+    )
+  }
+
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <div className="flex items-center justify-between px-4">
-        <SidebarGroupLabel>Projects</SidebarGroupLabel>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6"
-          onClick={() => {
-            setProjectName("")
-            setIsCreateOpen(true)
-          }}
-        >
-          <Plus className="h-4 w-4" />
-          <span className="sr-only">Add Project</span>
-        </Button>
-      </div>
+    <SidebarGroup>
+      <SidebarGroupLabel>PROJECT MANAGEMENT</SidebarGroupLabel>
       <SidebarMenu>
-        {projects && projects.map((item) => (
-          <SidebarMenuItem key={item.id}>
-            <SidebarMenuButton onClick={() => handleProjectSelect(item.id)}>
-              <CircleIcon />
-              <span>{item.title}</span>
+        <SidebarMenuItem>
+          <SidebarMenuButton onClick={() => setIsCreateOpen(true)}>
+            <Plus className="h-4 w-4" />
+            <span>Create new</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+        
+        <Collapsible asChild defaultOpen>
+          <SidebarMenuItem>
+            <SidebarMenuButton>
+              <LayoutList />
+              <span>Projects</span>
             </SidebarMenuButton>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuAction showOnHover>
-                  <MoreHorizontal />
-                  <span className="sr-only">More</span>
-                </SidebarMenuAction>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-48"
-                side={isMobile ? "bottom" : "right"}
-                align={isMobile ? "end" : "start"}
-              >
-                <DropdownMenuItem onSelect={() => {
-                  setSelectedProject({ id: item.id, name: item.title })
-                  setProjectName(item.title)
-                  setIsEditOpen(true)
-                }}>
-                  <Pencil className="text-muted-foreground" />
-                  <span>Edit Project</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Share className="text-muted-foreground" />
-                  <span>Share Project</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-red-600"
-                  onSelect={() => {
-                    setSelectedProject({ id: item.id, name: item.title })
-                    setIsDeleteOpen(true)
-                  }}
-                >
-                  <Trash2 className="text-red-600" />
-                  <span>Delete Project</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <CollapsibleTrigger asChild>
+              <SidebarMenuAction className="data-[state=open]:rotate-90">
+                <ChevronRight />
+                <span className="sr-only">Toggle</span>
+              </SidebarMenuAction>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarMenuSub>
+                {projects && projects.map((item) => (
+                  <SidebarMenuSubItem key={item.id}>
+                    <SidebarMenuSubButton onClick={() => handleProjectSelect(item.id)}>
+                      <span>{item.title}</span>
+                    </SidebarMenuSubButton>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <SidebarMenuAction showOnHover>
+                          <MoreHorizontal />
+                          <span className="sr-only">More</span>
+                        </SidebarMenuAction>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        className="w-48"
+                        side={isMobile ? "bottom" : "right"}
+                        align={isMobile ? "end" : "start"}
+                      >
+                        <DropdownMenuItem onSelect={() => {
+                          setSelectedProject({ id: item.id, title: item.title })
+                          setProjectTitle(item.title)
+                          setIsEditOpen(true)
+                        }}>
+                          <Pencil className="text-muted-foreground" />
+                          <span>Edit Project</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Share className="text-muted-foreground" />
+                          <span>Share Project</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-red-600"
+                          onSelect={() => {
+                            setSelectedProject({ id: item.id, title: item.title })
+                            setIsDeleteOpen(true)
+                          }}
+                        >
+                          <Trash2 className="text-red-600" />
+                          <span>Delete Project</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </SidebarMenuSubItem>
+                ))}
+              </SidebarMenuSub>
+            </CollapsibleContent>
           </SidebarMenuItem>
-        ))}
+        </Collapsible>
       </SidebarMenu>
 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -189,8 +220,8 @@ export function NavProjects() {
           <div className="grid gap-4 py-4">
             <Input
               placeholder="Project name"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
+              value={projectTitle}
+              onChange={(e) => setProjectTitle(e.target.value)}
             />
           </div>
           <DialogFooter>
@@ -207,8 +238,8 @@ export function NavProjects() {
           <div className="grid gap-4 py-4">
             <Input
               placeholder="Project name"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
+              value={projectTitle}
+              onChange={(e) => setProjectTitle(e.target.value)}
             />
           </div>
           <DialogFooter>
@@ -222,7 +253,7 @@ export function NavProjects() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Project</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete {selectedProject?.name}? This action cannot be undone.
+              Are you sure you want to delete {selectedProject?.title}? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

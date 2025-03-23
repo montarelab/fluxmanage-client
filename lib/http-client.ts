@@ -32,27 +32,29 @@ export const TaskService = {
     return response.data;
   },
 
-  async createTask(task: Partial<Task>): Promise<Task> {
-    const response = await readHttpClient.post("/tasks", task);
+
+  // returns id
+  async createTask(task: Partial<Task>): Promise<string> {
+    const response = await readHttpClient.post("/tickets", task);
     return response.data;
   },
 
   async updateTask(taskId: string, updates: Partial<Task>): Promise<Task> {
-    const response = await readHttpClient.put(`/tasks/${taskId}`, updates);
+    const response = await readHttpClient.put(`/tickets`, {"id": taskId, ...updates});
     return response.data;
   },
 
   async deleteTask(taskId: string): Promise<void> {
-    await readHttpClient.delete(`/tasks/${taskId}`);
+    await readHttpClient.delete(`/tickets/${taskId}`);
   },
 
   async completeTask(taskId: string): Promise<Task> {
-    const response = await readHttpClient.patch(`/tasks/${taskId}/complete`);
+    const response = await readHttpClient.patch(`/tickets/${taskId}/complete`);
     return response.data;
   },
 
   async assignTask(taskId: string, userId: string): Promise<Task> {
-    const response = await readHttpClient.patch(`/tasks/${taskId}/assign`, { userId });
+    const response = await readHttpClient.patch(`/tickets/${taskId}/assign`, { userId });
     return response.data;
   },
 };
@@ -63,13 +65,15 @@ export const ProjectService = {
     return response.data.projects;
   },
 
-  async createProject(project: Partial<Project>): Promise<Project> {
+
+  // returns id
+  async createProject(project: Partial<Project>): Promise<string> {
     const response = await writeHttpClient.post("/projects", project);
     return response.data;
   },
 
-  async updateProject(projectId: string, updates: Partial<Project>): Promise<Project> {
-    const response = await writeHttpClient.put(`/projects/${projectId}`, updates);
+  async updateProject(projectId: string, updates: Partial<Project>): Promise<string> {
+    const response = await writeHttpClient.put(`/projects`, { id: projectId, ...updates });
     return response.data;
   },
 

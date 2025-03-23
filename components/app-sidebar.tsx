@@ -11,7 +11,13 @@ import {
   PieChart,
   Send,
   Settings2,
+  UserPlus,
+  Crown,
   SquareTerminal,
+  Home,
+  FilePieChart,
+  Calendar,
+  Cog
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -36,71 +42,71 @@ const data = {
   },
   navMain: [
     {
-      title: "Playground",
+      title: "Home",
       url: "#",
-      icon: SquareTerminal,
+      icon: Home,
       isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
+      // items: [
+      //   {
+      //     title: "History",
+      //     url: "#",
+      //   },
+      //   {
+      //     title: "Starred",
+      //     url: "#",
+      //   },
+      //   {
+      //     title: "Settings",
+      //     url: "#",
+      //   },
+      // ],
     },
     {
-      title: "Models",
+      title: "Reports",
       url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
+      icon: FilePieChart,
+      // items: [
+      //   {
+      //     title: "Genesis",
+      //     url: "#",
+      //   },
+      //   {
+      //     title: "Explorer",
+      //     url: "#",
+      //   },
+      //   {
+      //     title: "Quantum",
+      //     url: "#",
+      //   },
+      // ],
     },
     {
-      title: "Documentation",
+      title: "Calendar",
       url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
+      icon: Calendar,
+      // items: [
+      //   {
+      //     title: "Introduction",
+      //     url: "#",
+      //   },
+      //   {
+      //     title: "Get Started",
+      //     url: "#",
+      //   },
+      //   {
+      //     title: "Tutorials",
+      //     url: "#",
+      //   },
+      //   {
+      //     title: "Changelog",
+      //     url: "#",
+      //   },
+      // ],
     },
     {
-      title: "Settings",
+      title: "Automation",
       url: "#",
-      icon: Settings2,
+      icon: Cog,
       items: [
         {
           title: "General",
@@ -123,14 +129,14 @@ const data = {
   ],
   navSecondary: [
     {
-      title: "Support",
+      title: "Invite",
       url: "#",
-      icon: LifeBuoy,
+      icon: UserPlus,
     },
     {
-      title: "Feedback",
+      title: "Subscription",
       url: "#",
-      icon: Send,
+      icon: Crown,
     },
   ],
   projects: [
