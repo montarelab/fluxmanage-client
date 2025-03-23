@@ -27,20 +27,20 @@ readHttpClient.interceptors.response.use(
 );
 
 export const TaskService = {
-  async getAllTasks(): Promise<Task[]> {
-    const response = await readHttpClient.get("/tasks");
-    return response.data;
+  async getAllTasks(projectId: string): Promise<Task[]> {
+    const url = `/tickets/all/${projectId}`;
+    const response = await readHttpClient.get(url);
+    return response.data.tickets;
   },
-
 
   // returns id
   async createTask(task: Partial<Task>): Promise<string> {
-    const response = await readHttpClient.post("/tickets", task);
+    const response = await writeHttpClient.post("/tickets", task);
     return response.data;
   },
 
-  async updateTask(taskId: string, updates: Partial<Task>): Promise<Task> {
-    const response = await readHttpClient.put(`/tickets`, {"id": taskId, ...updates});
+  async updateTask(taskId: string, updates: Partial<Task>): Promise<string> {
+    const response = await writeHttpClient.put(`/tickets`, {"id": taskId, ...updates});
     return response.data;
   },
 

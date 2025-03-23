@@ -28,17 +28,18 @@ import {
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 import { DataTableRowActions } from "./data-table-row-actions";
-import { Sheet } from "@/components/ui/sheet";
-import { taskSchema } from "../data/schema";
+import { Task } from "@/types/task";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  onTaskUpdated?: (task: Task) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  onTaskUpdated,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -125,7 +126,7 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  No tasks found.
                 </TableCell>
               </TableRow>
             )}
@@ -139,6 +140,7 @@ export function DataTable<TData, TValue>({
           row={{ original: selectedRow } as any} 
           isSheetOpenExternal={isSheetOpen}
           setIsSheetOpenExternal={setIsSheetOpen}
+          onTaskUpdated={onTaskUpdated}
         />
       )}
     </div>

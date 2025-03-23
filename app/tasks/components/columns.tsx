@@ -5,10 +5,29 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 
-import { labels, priorities, statuses } from "../data/data";
-import { Task } from "../data/schema";
+import { Task } from "@/types/task";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
+import { format } from "date-fns";
+
+// Status config for display
+const statuses = [
+  {
+    value: "created",
+    label: "Created",
+    icon: null
+  },
+  {
+    value: "inProgress",
+    label: "In Progress",
+    icon: null
+  },
+  {
+    value: "completed",
+    label: "Completed",
+    icon: null
+  }
+];
 
 export const columns: ColumnDef<Task>[] = [
   {
@@ -39,25 +58,13 @@ export const columns: ColumnDef<Task>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "id",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Task" />
-    ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("id")}</div>,
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
     accessorKey: "title",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Title" />
     ),
     cell: ({ row }) => {
-      const label = labels.find((label) => label.value === row.original.label);
-
       return (
         <div className="flex space-x-2">
-          {label && <Badge variant="outline">{label.label}</Badge>}
           <span className="max-w-[500px] truncate font-medium">
             {row.getValue("title")}
           </span>
@@ -71,14 +78,15 @@ export const columns: ColumnDef<Task>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
+      const statusValue = row.getValue("status") as string;
       const status = statuses.find(
-        (status) => status.value === row.getValue("status")
+        (status) => status.value === statusValue
       );
-
+      
       if (!status) {
-        return null;
+        return statusValue;
       }
-
+      
       return (
         <div className="flex w-[100px] items-center">
           {status.icon && (
@@ -93,30 +101,23 @@ export const columns: ColumnDef<Task>[] = [
     },
   },
   {
-    accessorKey: "priority",
+    accessorKey: "dueDate",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Priority" />
+      <DataTableColumnHeader column={column} title="Due Date" />
     ),
     cell: ({ row }) => {
-      const priority = priorities.find(
-        (priority) => priority.value === row.getValue("priority")
-      );
-
-      if (!priority) {
-        return null;
+      const dueDate = row.getValue("dueDate") as string;
+      if (!dueDate) return null;
+      
+      try {
+        return (
+          <div className="flex items-center">
+            <span>{format(new Date(dueDate), "MMM dd, yyyy")}</span>
+          </div>
+        );
+      } catch (error) {
+        return <span>{dueDate}</span>;
       }
-
-      return (
-        <div className="flex items-center">
-          {priority.icon && (
-            <priority.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-          )}
-          <span>{priority.label}</span>
-        </div>
-      );
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
     },
   },
   {

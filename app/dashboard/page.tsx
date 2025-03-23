@@ -1,3 +1,5 @@
+"use client";
+
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   SidebarInset,
@@ -7,6 +9,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Task } from "@/types/task";
 import { TaskService } from "@/lib/http-client";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { TaskContent } from "../tasks/components/TaskContent";
 
@@ -14,20 +18,27 @@ interface ExtendedTask extends Task {
   label: string;
 }
 
-async function getTasks(): Promise<ExtendedTask[]> {
-  // Import tasks from JSON file
-  const tasks = await import('../tasks/data/tasks.json').then(module => module.default);
-  return tasks.map(task => ({
-    ...task,
-    // Map various status values to either "pending" or "completed"
-    status: ["done", "canceled"].includes(task.status) ? "completed" : "pending",
-    // Ensure priority is one of the allowed values
-    priority: task.priority as "medium" | "high" | "low"
-  }));
-}
-
-export default async function DashboardPage() {
-  const tasks = await getTasks();
+export default function DashboardPage() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get("project");
+  
+  useEffect(() => {
+    async function fetchTasks() {
+      setLoading(true);
+      try {
+        const fetchedTasks = await TaskService.getAllTasks(projectId || undefined);
+        setTasks(fetchedTasks);
+      } catch (error) {
+        console.error("Failed to fetch tasks:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchTasks();
+  }, [projectId]); // Re-fetch when projectId changes
 
   return (
     <SidebarProvider>
@@ -39,7 +50,7 @@ export default async function DashboardPage() {
           <h1 className="text-xl font-bold">Dashboard</h1>
         </header>
         <div className="p-4">
-          <TaskContent tasks={tasks} />
+          <TaskContent tasks={tasks} loading={loading} />
         </div>
       </SidebarInset>
     </SidebarProvider>
