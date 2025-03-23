@@ -60,26 +60,26 @@ export const TaskService = {
 export const ProjectService = {
   async getAllProjects(): Promise<Project[]> {
     const response = await readHttpClient.get("/projects/all");
-    return response.data;
+    return response.data.projects;
   },
 
   async createProject(project: Partial<Project>): Promise<Project> {
-    const response = await readHttpClient.post("/projects", project);
+    const response = await writeHttpClient.post("/projects", project);
     return response.data;
   },
 
   async updateProject(projectId: string, updates: Partial<Project>): Promise<Project> {
-    const response = await readHttpClient.put(`/projects/${projectId}`, updates);
+    const response = await writeHttpClient.put(`/projects/${projectId}`, updates);
     return response.data;
   },
 
   async deleteProject(projectId: string): Promise<void> {
-    await readHttpClient.delete(`/projects/${projectId}`);
+    await writeHttpClient.delete(`/projects/${projectId}`);
   },
 
-  async inviteToProject(projectId: string, email: string): Promise<void> {
-    await readHttpClient.post(`/projects/${projectId}/invite`, { email });
-  },
+  // async inviteToProject(projectId: string, email: string): Promise<void> {
+  //   await writeHttpClient.post(`/projects/${projectId}/invite`, { email });
+  // },
 };
 
 export default readHttpClient;

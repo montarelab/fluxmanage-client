@@ -2,12 +2,11 @@
 
 import { useState } from "react"
 import {
-  Folder,
+  CircleIcon,
   MoreHorizontal,
   Plus,
   Share,
   Trash2,
-  type LucideIcon,
   Pencil,
 } from "lucide-react"
 
@@ -49,27 +48,35 @@ import {
 import { useProjects } from "@/hooks/useProjects"
 import { ProjectService } from "@/lib/http-client"
 
-export function NavProjects({
-  projects,
-}: {
-  projects: {
-    id: string;
-    name: string
-    url: string
-    icon: LucideIcon
-  }[]
-}) {
+export function NavProjects() {
   const { isMobile } = useSidebar()
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [selectedProject, setSelectedProject] = useState<{ id: string; name: string } | null>(null)
   const [projectName, setProjectName] = useState("")
-  const { setProjects } = useProjects()
+  const { projects, loading, setProjects } = useProjects()
+
+  if (loading) {
+    return (
+      <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+        <div className="flex items-center justify-between px-4">
+          <SidebarGroupLabel>Projects</SidebarGroupLabel>
+          <Button variant="ghost" size="icon" className="h-6 w-6" disabled>
+            <Plus className="h-4 w-4" />
+            <span className="sr-only">Add Project</span>
+          </Button>
+        </div>
+        <SidebarMenu>
+          <div className="px-4 py-2 text-sm text-muted-foreground">Loading...</div>
+        </SidebarMenu>
+      </SidebarGroup>
+    )
+  }
 
   const handleCreateProject = async () => {
     try {
-      const newProject = await ProjectService.createProject({ name: projectName })
+      const newProject = await ProjectService.createProject({ title: projectName })
       setProjects(prev => [...prev, newProject])
       setIsCreateOpen(false)
       setProjectName("")
@@ -81,7 +88,7 @@ export function NavProjects({
   const handleEditProject = async () => {
     if (!selectedProject) return
     try {
-      const updatedProject = await ProjectService.updateProject(selectedProject.id, { name: projectName })
+      const updatedProject = await ProjectService.updateProject(selectedProject.id, { title: projectName })
       setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p))
       setIsEditOpen(false)
       setSelectedProject(null)
@@ -103,6 +110,12 @@ export function NavProjects({
     }
   }
 
+  const handleProjectSelect = (projectId: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('project', projectId);
+    window.history.pushState({}, '', url.toString());
+  }
+
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <div className="flex items-center justify-between px-4">
@@ -121,13 +134,11 @@ export function NavProjects({
         </Button>
       </div>
       <SidebarMenu>
-        {projects.map((item) => (
-          <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
-              <a href={item.url}>
-                <item.icon />
-                <span>{item.name}</span>
-              </a>
+        {projects && projects.map((item) => (
+          <SidebarMenuItem key={item.id}>
+            <SidebarMenuButton onClick={() => handleProjectSelect(item.id)}>
+              <CircleIcon />
+              <span>{item.title}</span>
             </SidebarMenuButton>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -142,8 +153,8 @@ export function NavProjects({
                 align={isMobile ? "end" : "start"}
               >
                 <DropdownMenuItem onSelect={() => {
-                  setSelectedProject({ id: item.id, name: item.name })
-                  setProjectName(item.name)
+                  setSelectedProject({ id: item.id, name: item.title })
+                  setProjectName(item.title)
                   setIsEditOpen(true)
                 }}>
                   <Pencil className="text-muted-foreground" />
@@ -157,7 +168,7 @@ export function NavProjects({
                 <DropdownMenuItem
                   className="text-red-600"
                   onSelect={() => {
-                    setSelectedProject({ id: item.id, name: item.name })
+                    setSelectedProject({ id: item.id, name: item.title })
                     setIsDeleteOpen(true)
                   }}
                 >
